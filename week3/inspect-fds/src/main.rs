@@ -1,5 +1,7 @@
 use std::env;
 
+use process::Process;
+
 mod open_file;
 mod process;
 mod ps_utils;
@@ -14,7 +16,32 @@ fn main() {
     let target = &args[1];
 
     // TODO: Milestone 1: Get the target Process using psutils::get_target()
-    unimplemented!();
+    let process_opt = match ps_utils::get_target(target) {
+        Ok(process) => process,
+        Err(e) => {
+            eprintln!("can't match process through ps or pgrep, error msg: {}", e);
+            std::process::exit(1);
+        }
+    };
+    match process_opt {
+        Some(process) => print_process(&process),
+        None => {
+            println!("Target {:?} not found", target);
+            std::process::exit(1);
+        }
+    }
+}
+
+fn print_process(process: &Process) {
+    println!(
+        "==== \"{}\"(pid: {}, ppid: {}) ====",
+        process.command, process.pid, process.ppid
+    );
+    let Ok(child_process) = ps_utils::get_child_processes(process.pid) else {
+        eprintln!("match child process error.");
+        std::process::exit(1);
+    };
+    child_process.iter().for_each(print_process);
 }
 
 #[cfg(test)]

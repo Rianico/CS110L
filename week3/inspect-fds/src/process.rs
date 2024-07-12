@@ -1,6 +1,7 @@
 use crate::open_file::OpenFile;
 #[allow(unused)] // TODO: delete this line for Milestone 3
 use std::fs;
+use std::path::Path;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Process {
@@ -23,7 +24,18 @@ impl Process {
     #[allow(unused)] // TODO: delete this line for Milestone 3
     pub fn list_fds(&self) -> Option<Vec<usize>> {
         // TODO: implement for Milestone 3
-        unimplemented!();
+        let fd_path = format!("/proc/{}/fd", self.pid);
+        fs::read_dir(Path::new(&fd_path)).ok().map(|read_dir| {
+            read_dir
+                .flatten()
+                .map(|dir| {
+                    dir.file_name()
+                        .to_str()
+                        .map(|path| path.parse::<usize>().expect("parse fd name failed"))
+                })
+                .flatten()
+                .collect()
+        })
     }
 
     /// This function returns a list of (fdnumber, OpenFile) tuples, if file descriptor
