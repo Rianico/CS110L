@@ -1,6 +1,9 @@
 pub enum DebuggerCommand {
     Quit,
     Run(Vec<String>),
+    CONT,
+    BACKSTRACE,
+    BREAKPOINT(String),
 }
 
 impl DebuggerCommand {
@@ -13,6 +16,9 @@ impl DebuggerCommand {
                     args.iter().map(|s| s.to_string()).collect(),
                 ))
             }
+            "c" | "cont" => Some(DebuggerCommand::CONT),
+            "bt" | "back" | "backstrace" => Some(DebuggerCommand::BACKSTRACE),
+            "b" | "break" => Some(DebuggerCommand::BREAKPOINT(tokens[1].to_string())),
             // Default case:
             _ => None,
         }
